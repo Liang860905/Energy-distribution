@@ -3,9 +3,25 @@ import matplotlib.pyplot as plt
 from scipy.constants import Boltzmann as k_B, atomic_mass
 from scipy.special import erf
 import streamlit as st
+import matplotlib as mpl
+from matplotlib.font_manager import fontManager
 
 # 設定 Streamlit 頁面配置以適應手機顯示
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+
+# 下載台北思源黑體字型（適用於 Streamlit Cloud）
+import os
+if not os.path.exists('TaipeiSansTCBeta-Regular.ttf'):
+    import requests
+    url = "https://drive.google.com/uc?id=1eGAsTN1HBpJAkeVM57_C7ccp7hbgSz3_&export=download"
+    response = requests.get(url)
+    with open('TaipeiSansTCBeta-Regular.ttf', 'wb') as f:
+        f.write(response.content)
+
+# 將字型加入 Matplotlib 字型家族
+fontManager.addfont('TaipeiSansTCBeta-Regular.ttf')
+mpl.rc('font', family='Taipei Sans TC Beta')
+mpl.rcParams['axes.unicode_minus'] = False  # 確保負號正確顯示
 
 # 預設座標軸範圍
 X_MIN, X_MAX = 0, 6e-20
@@ -31,8 +47,8 @@ st.markdown("比較不同溫度下動能分布的差異，建議手機橫屏查�
 with st.expander("分布控制", expanded=True):
     col1, col2 = st.columns(2)
     with col1:
-        temp_kelvin_1 = st.slider("溫度 (K) - 左側", min_value=100, max_value=1000, step=50, value=500, key="temp1")
-        energy_threshold_1 = st.slider("閾值 (×1e⁻²¹ J) - 左側", min_value=0, max_value=50, step=2, value=30, key="threshold1")
+        temp_kelvin_1 = st.slider("溫度 (K) - 左側", min_value=100, max_value=1000, step=50, value=300, key="temp1")
+        energy_threshold_1 = st.slider("閾值 (×1e⁻²¹ J) - 左側", min_value=0, max_value=50, step=2, value=20, key="threshold1")
     with col2:
         temp_kelvin_2 = st.slider("溫度 (K) - 右側", min_value=100, max_value=1000, step=50, value=500, key="temp2")
         energy_threshold_2 = st.slider("閾值 (×1e⁻²¹ J) - 右側", min_value=0, max_value=50, step=2, value=30, key="threshold2")
@@ -71,39 +87,39 @@ fig2, ax2 = plt.subplots(figsize=(5, 3.5))
 ax1.set_xlim(X_MIN, X_MAX)
 ax1.set_ylim(Y_MIN, Y_MAX)
 bins = np.linspace(X_MIN, X_MAX, 361)
-ax1.hist(energies_1, bins=bins, density=True, alpha=0.6, color='dodgerblue', label='Simulation')
+ax1.hist(energies_1, bins=bins, density=True, alpha=0.6, color='dodgerblue', label='模擬數據')
 E_plot = np.linspace(X_MIN, X_MAX, 1000)
 theory_1 = mb_kinetic_energy_dist(E_plot, temp_kelvin_1)
-ax1.plot(E_plot, theory_1, 'r-', lw=2, label='MB Theory')
+ax1.plot(E_plot, theory_1, 'r-', lw=2, label='MB 理論')
 ax1.axvline(energy_threshold_j_1, color='limegreen', ls='--', lw=2)
-ax1.text(0.55, 0.85, f'exceed (sim): {exceed_ratio_sim_1:.2f}%', 
+ax1.text(0.55, 0.85, f'超出 (模擬): {exceed_ratio_sim_1:.2f}%', 
          transform=ax1.transAxes, fontsize=8,
          bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
-ax1.text(0.55, 0.75, f'exceed (theory): {exceed_ratio_theory_1:.2f}%', 
+ax1.text(0.55, 0.75, f'超出 (理論): {exceed_ratio_theory_1:.2f}%', 
          transform=ax1.transAxes, fontsize=8,
          bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
-ax1.set_xlabel('Kinetic energy (J)', fontsize=8)
-ax1.set_ylabel('prob. density', fontsize=8)
-ax1.set_title(f'temp. {temp_kelvin_1} K', fontsize=10)
+ax1.set_xlabel('動能 (J)', fontsize=8)
+ax1.set_ylabel('概率密度', fontsize=8)
+ax1.set_title(f'溫度 {temp_kelvin_1} K', fontsize=10)
 ax1.grid(True, alpha=0.3)
 ax1.legend(fontsize=7)
 
 # 右側圖表設置
 ax2.set_xlim(X_MIN, X_MAX)
 ax2.set_ylim(Y_MIN, Y_MAX)
-ax2.hist(energies_2, bins=bins, density=True, alpha=0.6, color='dodgerblue', label='Simulation')
+ax2.hist(energies_2, bins=bins, density=True, alpha=0.6, color='dodgerblue', label='模擬數據')
 theory_2 = mb_kinetic_energy_dist(E_plot, temp_kelvin_2)
-ax2.plot(E_plot, theory_2, 'r-', lw=2, label='MB Theory')
+ax2.plot(E_plot, theory_2, 'r-', lw=2, label='MB 理論')
 ax2.axvline(energy_threshold_j_2, color='limegreen', ls='--', lw=2)
-ax2.text(0.55, 0.85, f'exceed (sim): {exceed_ratio_sim_2:.2f}%', 
+ax2.text(0.55, 0.85, f'超出 (模擬): {exceed_ratio_sim_2:.2f}%', 
          transform=ax2.transAxes, fontsize=8,
          bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
-ax2.text(0.55, 0.75, f'exceed (theory): {exceed_ratio_theory_2:.2f}%', 
+ax2.text(0.55, 0.75, f'超出 (理論): {exceed_ratio_theory_2:.2f}%', 
          transform=ax2.transAxes, fontsize=8,
          bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
-ax2.set_xlabel('Kinetic energy (J)', fontsize=8)
-ax2.set_ylabel('prob. density', fontsize=8)
-ax2.set_title(f'temp. {temp_kelvin_2} K', fontsize=10)
+ax2.set_xlabel('動能 (J)', fontsize=8)
+ax2.set_ylabel('概率密度', fontsize=8)
+ax2.set_title(f'溫度 {temp_kelvin_2} K', fontsize=10)
 ax2.grid(True, alpha=0.3)
 ax2.legend(fontsize=7)
 
