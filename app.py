@@ -16,28 +16,23 @@ def mb_kinetic_energy_dist(E, T):
 
 # 設定 Streamlit 頁面標題
 st.title("Maxwell-Boltzmann 動能分布")
-st.markdown("比較不同溫度下動能分布的差異。")
+st.markdown("比較不同溫度下動能分布的差異，建議手機橫屏查看。")
 
 # 使用 st.expander 將滑桿摺疊起來，節省空間
-with st.expander("上側分布控制", expanded=True):
+with st.expander("分布控制", expanded=True):
     col1, col2 = st.columns(2)
     with col1:
-        temp_kelvin_1 = st.slider("溫度 (K)", min_value=100, max_value=1000, step=50, value=300, key="temp1")
+        temp_kelvin_1 = st.slider("溫度 (K) - 左側", min_value=100, max_value=1000, step=50, value=300, key="temp1")
+        energy_threshold_1 = st.slider("閾值 (×1e⁻²¹ J) - 左側", min_value=0, max_value=50, step=2, value=20, key="threshold1")
     with col2:
-        energy_threshold_1 = st.slider("閾值 (×1e⁻²¹ J)", min_value=0, max_value=50, step=2, value=20, key="threshold1")
-
-with st.expander("下側分布控制", expanded=True):
-    col3, col4 = st.columns(2)
-    with col3:
-        temp_kelvin_2 = st.slider("溫度 (K)", min_value=100, max_value=1000, step=50, value=500, key="temp2")
-    with col4:
-        energy_threshold_2 = st.slider("閾值 (×1e⁻²¹ J)", min_value=0, max_value=50, step=2, value=30, key="threshold2")
+        temp_kelvin_2 = st.slider("溫度 (K) - 右側", min_value=100, max_value=1000, step=50, value=500, key="temp2")
+        energy_threshold_2 = st.slider("閾值 (×1e⁻²¹ J) - 右側", min_value=0, max_value=50, step=2, value=30, key="threshold2")
 
 # 計算動能閾值（單位：焦耳）
 energy_threshold_j_1 = energy_threshold_1 * 1e-21
 energy_threshold_j_2 = energy_threshold_2 * 1e-21
 
-# 數據生成 - 上側
+# 數據生成 - 左側
 mass_kg = 39.95 * atomic_mass
 n_particles = 100000
 sigma_1 = np.sqrt(k_B * temp_kelvin_1 / mass_kg)
@@ -45,17 +40,17 @@ velocities_1 = np.random.normal(0, sigma_1, (n_particles, 3))
 speeds_1 = np.linalg.norm(velocities_1, axis=1)
 energies_1 = 0.5 * mass_kg * speeds_1**2
 
-# 數據生成 - 下側
+# 數據生成 - 右側
 sigma_2 = np.sqrt(k_B * temp_kelvin_2 / mass_kg)
 velocities_2 = np.random.normal(0, sigma_2, (n_particles, 3))
 speeds_2 = np.linalg.norm(velocities_2, axis=1)
 energies_2 = 0.5 * mass_kg * speeds_2**2
 
-# 建立上下兩張圖表，調整尺寸以適應手機顯示
-fig1, ax1 = plt.subplots(figsize=(6, 4))
-fig2, ax2 = plt.subplots(figsize=(6, 4))
+# 建立左右兩張圖表，調整尺寸以適應手機橫屏顯示
+fig1, ax1 = plt.subplots(figsize=(5, 3.5))
+fig2, ax2 = plt.subplots(figsize=(5, 3.5))
 
-# 上側圖表設置
+# 左側圖表設置
 ax1.set_xlim(X_MIN, X_MAX)
 ax1.set_ylim(Y_MIN, Y_MAX)
 bins = np.linspace(X_MIN, X_MAX, 361)
@@ -74,7 +69,7 @@ ax1.set_title(f'temp. {temp_kelvin_1} K', fontsize=10)
 ax1.grid(True, alpha=0.3)
 ax1.legend(fontsize=7)
 
-# 下側圖表設置
+# 右側圖表設置
 ax2.set_xlim(X_MIN, X_MAX)
 ax2.set_ylim(Y_MIN, Y_MAX)
 ax2.hist(energies_2, bins=bins, density=True, alpha=0.6, color='dodgerblue', label='Simulation')
@@ -91,6 +86,9 @@ ax2.set_title(f'temp. {temp_kelvin_2} K', fontsize=10)
 ax2.grid(True, alpha=0.3)
 ax2.legend(fontsize=7)
 
-# 顯示上下圖表
-st.pyplot(fig1, use_container_width=True)
-st.pyplot(fig2, use_container_width=True)
+# 使用 Streamlit 的 columns 顯示左右圖表
+col1, col2 = st.columns(2)
+with col1:
+    st.pyplot(fig1, use_container_width=True)
+with col2:
+    st.pyplot(fig2, use_container_width=True)
