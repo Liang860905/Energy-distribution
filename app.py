@@ -31,8 +31,8 @@ st.markdown("比較不同溫度下動能分布的差異，建議手機橫屏查�
 with st.expander("分布控制", expanded=True):
     col1, col2 = st.columns(2)
     with col1:
-        temp_kelvin_1 = st.slider("溫度 (K) - 左側", min_value=100, max_value=1000, step=50, value=300, key="temp1")
-        energy_threshold_1 = st.slider("閾值 (×1e⁻²¹ J) - 左側", min_value=0, max_value=50, step=2, value=20, key="threshold1")
+        temp_kelvin_1 = st.slider("溫度 (K) - 左側", min_value=100, max_value=1000, step=50, value=500, key="temp1")
+        energy_threshold_1 = st.slider("閾值 (×1e⁻²¹ J) - 左側", min_value=0, max_value=50, step=2, value=30, key="threshold1")
     with col2:
         temp_kelvin_2 = st.slider("溫度 (K) - 右側", min_value=100, max_value=1000, step=50, value=500, key="temp2")
         energy_threshold_2 = st.slider("閾值 (×1e⁻²¹ J) - 右側", min_value=0, max_value=50, step=2, value=30, key="threshold2")
