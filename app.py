@@ -51,4 +51,81 @@ energy_threshold_j_2 = energy_threshold_2 * 1e-21
 mass_kg = 39.95 * atomic_mass
 n_particles = 100000
 sigma_1 = np.sqrt(k_B * temp_kelvin_1 / mass_kg)
-velocities_1 = np.random.normal(0, sigma_1, (n_particles,
+velocities_1 = np.random.normal(0, sigma_1, (n_particles, 3))
+speeds_1 = np.linalg.norm(velocities_1, axis=1)
+energies_1 = 0.5 * mass_kg * speeds_1**2
+
+# 數據生成 - 右側
+sigma_2 = np.sqrt(k_B * temp_kelvin_2 / mass_kg)
+velocities_2 = np.random.normal(0, sigma_2, (n_particles, 3))
+speeds_2 = np.linalg.norm(velocities_2, axis=1)
+energies_2 = 0.5 * mass_kg * speeds_2**2
+
+# 計算模擬的 exceed ratio
+exceed_ratio_sim_1 = (energies_1 > energy_threshold_j_1).mean() * 100
+exceed_ratio_sim_2 = (energies_2 > energy_threshold_j_2).mean() * 100
+
+# 計算理論的 exceed ratio（精確解析解）
+exceed_ratio_theory_1 = calculate_theoretical_exceed_ratio(energy_threshold_j_1, temp_kelvin_1)
+exceed_ratio_theory_2 = calculate_theoretical_exceed_ratio(energy_threshold_j_2, temp_kelvin_2)
+
+# 計算近似的 exceed ratio（使用 e^(-E/kT)）
+exceed_ratio_approx_1 = calculate_approx_exceed_ratio(energy_threshold_j_1, temp_kelvin_1)
+exceed_ratio_approx_2 = calculate_approx_exceed_ratio(energy_threshold_j_2, temp_kelvin_2)
+
+# 建立左右兩張圖表，調整尺寸以適應手機橫屏顯示
+fig1, ax1 = plt.subplots(figsize=(5, 3.5))
+fig2, ax2 = plt.subplots(figsize=(5, 3.5))
+
+# 左側圖表設置
+ax1.set_xlim(X_MIN, X_MAX)
+ax1.set_ylim(Y_MIN, Y_MAX)
+bins = np.linspace(X_MIN, X_MAX, 361)
+ax1.hist(energies_1, bins=bins, density=True, alpha=0.6, color='dodgerblue', label='Simulation')
+E_plot = np.linspace(X_MIN, X_MAX, 1000)
+theory_1 = mb_kinetic_energy_dist(E_plot, temp_kelvin_1)
+ax1.plot(E_plot, theory_1, 'r-', lw=2, label='MB Theory')
+ax1.axvline(energy_threshold_j_1, color='limegreen', ls='--', lw=2)
+ax1.text(0.55, 0.85, f'exceed (sim): {exceed_ratio_sim_1:.2f}%', 
+         transform=ax1.transAxes, fontsize=8,
+         bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
+ax1.text(0.55, 0.75, f'exceed (theory): {exceed_ratio_theory_1:.2f}%', 
+         transform=ax1.transAxes, fontsize=8,
+         bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
+ax1.text(0.55, 0.65, f'exceed (approx): {exceed_ratio_approx_1:.2f}%', 
+         transform=ax1.transAxes, fontsize=8,
+         bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
+ax1.set_xlabel('Kinetic energy (J)', fontsize=8)
+ax1.set_ylabel('prob. density', fontsize=8)
+ax1.set_title(f'temp. {temp_kelvin_1} K', fontsize=10)
+ax1.grid(True, alpha=0.3)
+ax1.legend(fontsize=7)
+
+# 右側圖表設置
+ax2.set_xlim(X_MIN, X_MAX)
+ax2.set_ylim(Y_MIN, Y_MAX)
+ax2.hist(energies_2, bins=bins, density=True, alpha=0.6, color='dodgerblue', label='Simulation')
+theory_2 = mb_kinetic_energy_dist(E_plot, temp_kelvin_2)
+ax2.plot(E_plot, theory_2, 'r-', lw=2, label='MB Theory')
+ax2.axvline(energy_threshold_j_2, color='limegreen', ls='--', lw=2)
+ax2.text(0.55, 0.85, f'exceed (sim): {exceed_ratio_sim_2:.2f}%', 
+         transform=ax2.transAxes, fontsize=8,
+         bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
+ax2.text(0.55, 0.75, f'exceed (theory): {exceed_ratio_theory_2:.2f}%', 
+         transform=ax2.transAxes, fontsize=8,
+         bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
+ax2.text(0.55, 0.65, f'exceed (approx): {exceed_ratio_approx_2:.2f}%', 
+         transform=ax2.transAxes, fontsize=8,
+         bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
+ax2.set_xlabel('Kinetic energy (J)', fontsize=8)
+ax2.set_ylabel('prob. density', fontsize=8)
+ax2.set_title(f'temp. {temp_kelvin_2} K', fontsize=10)
+ax2.grid(True, alpha=0.3)
+ax2.legend(fontsize=7)
+
+# 使用 Streamlit 的 columns 顯示左右圖表
+col1, col2 = st.columns(2)
+with col1:
+    st.pyplot(fig1, use_container_width=True)
+with col2:
+    st.pyplot(fig2, use_container_width=True)
