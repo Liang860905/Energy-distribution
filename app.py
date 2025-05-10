@@ -31,10 +31,10 @@ with st.expander("分布控制", expanded=True):
     col1, col2 = st.columns(2)
     with col1:
         temp_kelvin_1 = st.slider("溫度 (K) - 左側", min_value=100, max_value=1000, step=50, value=300, key="temp1")
-        energy_threshold_1 = st.slider("閾值 (×1e⁻²¹ J) - 左側", min_value=0, max_value=50, step=2, value=30, key="threshold1")
+        energy_threshold_1 = st.slider("低限能 (×1e⁻²¹ J) - 左側", min_value=0, max_value=50, step=2, value=30, key="threshold1")
     with col2:
         temp_kelvin_2 = st.slider("溫度 (K) - 右側", min_value=100, max_value=1000, step=50, value=300, key="temp2")
-        energy_threshold_2 = st.slider("閾值 (×1e⁻²¹ J) - 右側", min_value=0, max_value=50, step=2, value=30, key="threshold2")
+        energy_threshold_2 = st.slider("低限能 (×1e⁻²¹ J) - 右側", min_value=0, max_value=50, step=2, value=30, key="threshold2")
 
 # 計算動能閾值（單位：焦耳）
 energy_threshold_j_1 = energy_threshold_1 * 1e-21
@@ -75,10 +75,10 @@ E_plot = np.linspace(X_MIN, X_MAX, 1000)
 theory_1 = mb_kinetic_energy_dist(E_plot, temp_kelvin_1)
 ax1.plot(E_plot, theory_1, 'r-', lw=2, label='MB Theory')
 ax1.axvline(energy_threshold_j_1, color='limegreen', ls='--', lw=2)
-ax1.text(0.55, 0.85, f'exceed (sim): {exceed_ratio_sim_1:.2f}%', 
+ax1.text(0.55, 0.85, f'大於低限能的分子比例 (模擬): {exceed_ratio_sim_1:.2f}%', 
          transform=ax1.transAxes, fontsize=8,
          bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
-ax1.text(0.55, 0.75, f'exceed (theory): {exceed_ratio_theory_1:.2f}%', 
+ax1.text(0.55, 0.75, f'大於低限能的分子比例 (理論): {exceed_ratio_theory_1:.2f}%', 
          transform=ax1.transAxes, fontsize=8,
          bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
 ax1.set_xlabel('Kinetic energy (J)', fontsize=8)
