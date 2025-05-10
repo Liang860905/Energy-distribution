@@ -23,12 +23,6 @@ def calculate_theoretical_exceed_ratio(E_threshold, T):
     exceed_ratio = 1 - erf(x) + (2 / np.sqrt(np.pi)) * x * np.exp(-x**2)
     return exceed_ratio * 100  # 轉換為百分比
 
-def calculate_approx_exceed_ratio(E_threshold, T):
-    # 計算近似的 exceed ratio，使用 e^(-E/kT)
-    if E_threshold <= 0:
-        return 100.0  # 如果閾值為 0 或負數，所有粒子都超過閾值
-    return np.exp(-E_threshold / (k_B * T)) * 100  # 轉換為百分比
-
 # 設定 Streamlit 頁面標題
 st.title("Maxwell-Boltzmann 動能分布")
 st.markdown("比較不同溫度下動能分布的差異，建議手機橫屏查看。")
@@ -38,9 +32,9 @@ with st.expander("分布控制", expanded=True):
     col1, col2 = st.columns(2)
     with col1:
         temp_kelvin_1 = st.slider("溫度 (K) - 左側", min_value=100, max_value=1000, step=50, value=300, key="temp1")
-        energy_threshold_1 = st.slider("閾值 (×1e⁻²¹ J) - 左側", min_value=0, max_value=50, step=2, value=20, key="threshold1")
+        energy_threshold_1 = st.slider("閾值 (×1e⁻²¹ J) - 左側", min_value=0, max_value=50, step=2, value=30, key="threshold1")
     with col2:
-        temp_kelvin_2 = st.slider("溫度 (K) - 右側", min_value=100, max_value=1000, step=50, value=500, key="temp2")
+        temp_kelvin_2 = st.slider("溫度 (K) - 右側", min_value=100, max_value=1000, step=50, value=300, key="temp2")
         energy_threshold_2 = st.slider("閾值 (×1e⁻²¹ J) - 右側", min_value=0, max_value=50, step=2, value=30, key="threshold2")
 
 # 計算動能閾值（單位：焦耳）
@@ -69,10 +63,6 @@ exceed_ratio_sim_2 = (energies_2 > energy_threshold_j_2).mean() * 100
 exceed_ratio_theory_1 = calculate_theoretical_exceed_ratio(energy_threshold_j_1, temp_kelvin_1)
 exceed_ratio_theory_2 = calculate_theoretical_exceed_ratio(energy_threshold_j_2, temp_kelvin_2)
 
-# 計算近似的 exceed ratio（使用 e^(-E/kT)）
-exceed_ratio_approx_1 = calculate_approx_exceed_ratio(energy_threshold_j_1, temp_kelvin_1)
-exceed_ratio_approx_2 = calculate_approx_exceed_ratio(energy_threshold_j_2, temp_kelvin_2)
-
 # 建立左右兩張圖表，調整尺寸以適應手機橫屏顯示
 fig1, ax1 = plt.subplots(figsize=(5, 3.5))
 fig2, ax2 = plt.subplots(figsize=(5, 3.5))
@@ -92,9 +82,6 @@ ax1.text(0.55, 0.85, f'exceed (sim): {exceed_ratio_sim_1:.2f}%',
 ax1.text(0.55, 0.75, f'exceed (theory): {exceed_ratio_theory_1:.2f}%', 
          transform=ax1.transAxes, fontsize=8,
          bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
-ax1.text(0.55, 0.65, f'exceed (approx): {exceed_ratio_approx_1:.2f}%', 
-         transform=ax1.transAxes, fontsize=8,
-         bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
 ax1.set_xlabel('Kinetic energy (J)', fontsize=8)
 ax1.set_ylabel('prob. density', fontsize=8)
 ax1.set_title(f'temp. {temp_kelvin_1} K', fontsize=10)
@@ -112,9 +99,6 @@ ax2.text(0.55, 0.85, f'exceed (sim): {exceed_ratio_sim_2:.2f}%',
          transform=ax2.transAxes, fontsize=8,
          bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
 ax2.text(0.55, 0.75, f'exceed (theory): {exceed_ratio_theory_2:.2f}%', 
-         transform=ax2.transAxes, fontsize=8,
-         bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
-ax2.text(0.55, 0.65, f'exceed (approx): {exceed_ratio_approx_2:.2f}%', 
          transform=ax2.transAxes, fontsize=8,
          bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
 ax2.set_xlabel('Kinetic energy (J)', fontsize=8)
