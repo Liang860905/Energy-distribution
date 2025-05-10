@@ -25,7 +25,6 @@ def calculate_theoretical_exceed_ratio(E_threshold, T):
 
 # 設定 Streamlit 頁面標題
 st.title("Maxwell-Boltzmann 動能分布")
-st.markdown("比較不同溫度下動能分布的差異，建議手機橫屏查看。")
 
 # 使用 st.expander 將滑桿摺疊起來，節省空間
 with st.expander("分布控制", expanded=True):
