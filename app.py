@@ -15,18 +15,23 @@ def mb_kinetic_energy_dist(E, T):
     return (2/np.sqrt(np.pi)) * (1/(k_B*T)**1.5) * np.sqrt(E) * np.exp(-E/(k_B*T))
 
 # 設定 Streamlit 頁面標題
-st.title("Maxwell-Boltzmann 動能分布模擬 - 上下對照")
-st.markdown("此工具允許您比較不同溫度下動能分布的差異，適合手機與桌面顯示。")
+st.title("Maxwell-Boltzmann 動能分布")
+st.markdown("比較不同溫度下動能分布的差異。")
 
-# 第一組滑桿（上側）
-st.subheader("上側分布")
-temp_kelvin_1 = st.slider("溫度 (K) - 上側", min_value=100, max_value=1000, step=50, value=300, key="temp1")
-energy_threshold_1 = st.slider("動能閾值 (×1e⁻²¹ J) - 上側", min_value=0, max_value=50, step=2, value=20, key="threshold1")
+# 使用 st.expander 將滑桿摺疊起來，節省空間
+with st.expander("上側分布控制", expanded=True):
+    col1, col2 = st.columns(2)
+    with col1:
+        temp_kelvin_1 = st.slider("溫度 (K)", min_value=100, max_value=1000, step=50, value=300, key="temp1")
+    with col2:
+        energy_threshold_1 = st.slider("閾值 (×1e⁻²¹ J)", min_value=0, max_value=50, step=2, value=20, key="threshold1")
 
-# 第二組滑桿（下側）
-st.subheader("下側分布")
-temp_kelvin_2 = st.slider("溫度 (K) - 下側", min_value=100, max_value=1000, step=50, value=500, key="temp2")
-energy_threshold_2 = st.slider("動能閾值 (×1e⁻²¹ J) - 下側", min_value=0, max_value=50, step=2, value=30, key="threshold2")
+with st.expander("下側分布控制", expanded=True):
+    col3, col4 = st.columns(2)
+    with col3:
+        temp_kelvin_2 = st.slider("溫度 (K)", min_value=100, max_value=1000, step=50, value=500, key="temp2")
+    with col4:
+        energy_threshold_2 = st.slider("閾值 (×1e⁻²¹ J)", min_value=0, max_value=50, step=2, value=30, key="threshold2")
 
 # 計算動能閾值（單位：焦耳）
 energy_threshold_j_1 = energy_threshold_1 * 1e-21
@@ -47,8 +52,8 @@ speeds_2 = np.linalg.norm(velocities_2, axis=1)
 energies_2 = 0.5 * mass_kg * speeds_2**2
 
 # 建立上下兩張圖表，調整尺寸以適應手機顯示
-fig1, ax1 = plt.subplots(figsize=(8, 5))
-fig2, ax2 = plt.subplots(figsize=(8, 5))
+fig1, ax1 = plt.subplots(figsize=(6, 4))
+fig2, ax2 = plt.subplots(figsize=(6, 4))
 
 # 上側圖表設置
 ax1.set_xlim(X_MIN, X_MAX)
@@ -60,14 +65,14 @@ theory_1 = mb_kinetic_energy_dist(E_plot, temp_kelvin_1)
 ax1.plot(E_plot, theory_1, 'r-', lw=2, label='Maxwell-Boltzmann Theory')
 ax1.axvline(energy_threshold_j_1, color='limegreen', ls='--', lw=2)
 exceed_ratio_1 = (energies_1 > energy_threshold_j_1).mean() * 100
-ax1.text(0.55, 0.85, f'exceed_ratio: {exceed_ratio_1:.2f}%',
-         transform=ax1.transAxes, fontsize=10,
-         bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=5))
-ax1.set_xlabel('Kinetic energy (J)', fontsize=10)
-ax1.set_ylabel('prob. density', fontsize=10)
-ax1.set_title(f'temp. {temp_kelvin_1} K', fontsize=12)
+ax1.text(0.55, 0.85, f'exceed: {exceed_ratio_1:.2f}%',
+         transform=ax1.transAxes, fontsize=8,
+         bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
+ax1.set_xlabel('Kinetic energy (J)', fontsize=8)
+ax1.set_ylabel('prob. density', fontsize=8)
+ax1.set_title(f'temp. {temp_kelvin_1} K', fontsize=10)
 ax1.grid(True, alpha=0.3)
-ax1.legend(fontsize=8)
+ax1.legend(fontsize=7)
 
 # 下側圖表設置
 ax2.set_xlim(X_MIN, X_MAX)
@@ -77,14 +82,14 @@ theory_2 = mb_kinetic_energy_dist(E_plot, temp_kelvin_2)
 ax2.plot(E_plot, theory_2, 'r-', lw=2, label='Maxwell-Boltzmann Theory')
 ax2.axvline(energy_threshold_j_2, color='limegreen', ls='--', lw=2)
 exceed_ratio_2 = (energies_2 > energy_threshold_j_2).mean() * 100
-ax2.text(0.55, 0.85, f'exceed_ratio: {exceed_ratio_2:.2f}%',
-         transform=ax2.transAxes, fontsize=10,
-         bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=5))
-ax2.set_xlabel('Kinetic energy (J)', fontsize=10)
-ax2.set_ylabel('prob. density', fontsize=10)
-ax2.set_title(f'temp. {temp_kelvin_2} K', fontsize=12)
+ax2.text(0.55, 0.85, f'exceed: {exceed_ratio_2:.2f}%',
+         transform=ax2.transAxes, fontsize=8,
+         bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
+ax2.set_xlabel('Kinetic energy (J)', fontsize=8)
+ax2.set_ylabel('prob. density', fontsize=8)
+ax2.set_title(f'temp. {temp_kelvin_2} K', fontsize=10)
 ax2.grid(True, alpha=0.3)
-ax2.legend(fontsize=8)
+ax2.legend(fontsize=7)
 
 # 顯示上下圖表
 st.pyplot(fig1, use_container_width=True)
