@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.constants import Boltzmann as k_B, atomic_mass
+from scipy.integrate import quad
 import streamlit as st
 
 # 設定 Streamlit 頁面配置以適應手機顯示
@@ -13,6 +14,12 @@ Y_MIN, Y_MAX = 0, 15e+19
 def mb_kinetic_energy_dist(E, T):
     # Maxwell-Boltzmann kinetic energy distribution for 3D
     return (2/np.sqrt(np.pi)) * (1/(k_B*T)**1.5) * np.sqrt(E) * np.exp(-E/(k_B*T))
+
+def calculate_theoretical_exceed_ratio(E_threshold, T):
+    # 計算理論上的 exceed ratio，使用數值積分
+    # 積分從 E_threshold 到無窮大
+    exceed_ratio, _ = quad(mb_kinetic_energy_dist, E_threshold, np.inf, args=(T,))
+    return exceed_ratio * 100  # 轉換為百分比
 
 # 設定 Streamlit 頁面標題
 st.title("Maxwell-Boltzmann 動能分布")
@@ -46,6 +53,14 @@ velocities_2 = np.random.normal(0, sigma_2, (n_particles, 3))
 speeds_2 = np.linalg.norm(velocities_2, axis=1)
 energies_2 = 0.5 * mass_kg * speeds_2**2
 
+# 計算模擬的 exceed ratio
+exceed_ratio_sim_1 = (energies_1 > energy_threshold_j_1).mean() * 100
+exceed_ratio_sim_2 = (energies_2 > energy_threshold_j_2).mean() * 100
+
+# 計算理論的 exceed ratio
+exceed_ratio_theory_1 = calculate_theoretical_exceed_ratio(energy_threshold_j_1, temp_kelvin_1)
+exceed_ratio_theory_2 = calculate_theoretical_exceed_ratio(energy_threshold_j_2, temp_kelvin_2)
+
 # 建立左右兩張圖表，調整尺寸以適應手機橫屏顯示
 fig1, ax1 = plt.subplots(figsize=(5, 3.5))
 fig2, ax2 = plt.subplots(figsize=(5, 3.5))
@@ -57,10 +72,12 @@ bins = np.linspace(X_MIN, X_MAX, 361)
 ax1.hist(energies_1, bins=bins, density=True, alpha=0.6, color='dodgerblue', label='Simulation')
 E_plot = np.linspace(X_MIN, X_MAX, 1000)
 theory_1 = mb_kinetic_energy_dist(E_plot, temp_kelvin_1)
-ax1.plot(E_plot, theory_1, 'r-', lw=2, label='Maxwell-Boltzmann Theory')
+ax1.plot(E_plot, theory_1, 'r-', lw=2, label='MB Theory')
 ax1.axvline(energy_threshold_j_1, color='limegreen', ls='--', lw=2)
-exceed_ratio_1 = (energies_1 > energy_threshold_j_1).mean() * 100
-ax1.text(0.55, 0.85, f'exceed: {exceed_ratio_1:.2f}%',
+ax1.text(0.55, 0.85, f'exceed (sim): {exceed_ratio_sim_1:.2f}%',
+         transform=ax1.transAxes, fontsize=8,
+         bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
+ax1.text(0.55, 0.75, f'exceed (theory): {exceed_ratio_theory_1:.2f}%',
          transform=ax1.transAxes, fontsize=8,
          bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
 ax1.set_xlabel('Kinetic energy (J)', fontsize=8)
@@ -74,10 +91,12 @@ ax2.set_xlim(X_MIN, X_MAX)
 ax2.set_ylim(Y_MIN, Y_MAX)
 ax2.hist(energies_2, bins=bins, density=True, alpha=0.6, color='dodgerblue', label='Simulation')
 theory_2 = mb_kinetic_energy_dist(E_plot, temp_kelvin_2)
-ax2.plot(E_plot, theory_2, 'r-', lw=2, label='Maxwell-Boltzmann Theory')
+ax2.plot(E_plot, theory_2, 'r-', lw=2, label='MB Theory')
 ax2.axvline(energy_threshold_j_2, color='limegreen', ls='--', lw=2)
-exceed_ratio_2 = (energies_2 > energy_threshold_j_2).mean() * 100
-ax2.text(0.55, 0.85, f'exceed: {exceed_ratio_2:.2f}%',
+ax2.text(0.55, 0.85, f'exceed (sim): {exceed_ratio_sim_2:.2f}%',
+         transform=ax2.transAxes, fontsize=8,
+         bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
+ax2.text(0.55, 0.75, f'exceed (theory): {exceed_ratio_theory_2:.2f}%',
          transform=ax2.transAxes, fontsize=8,
          bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=3))
 ax2.set_xlabel('Kinetic energy (J)', fontsize=8)
